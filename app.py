@@ -1,33 +1,46 @@
-import concurrent.futures
-import requests
+import asyncio
+import aiohttp
 import re
 from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__, template_folder='templates')
 
-def get_fb_id(url):
+async def fetch(session, url):
     headers = {
         'User-Agent': 'Mozilla/5.0'
     }
     try:
-        response = requests.get(url, headers=headers, timeout=10)
-        html = response.text
+        async with session.get(url, headers=headers, timeout=10) as response:
+            html = await response.text()
 
-        match = re.search(r'fb://profile/(\d+)', html)
-        if match:
-            return match.group(1)
+            match = re.search(r'fb://profile/(\d+)', html)
+            if match:
+                return match.group(1)
 
-        match = re.search(r'"entity_id":"(\d+)"', html)
-        if match:
-            return match.group(1)
+            match = re.search(r'"entity_id":"(\d+)"', html)
+            if match:
+                return match.group(1)
 
-        match = re.search(r'profile_id=(\d+)', html)
-        if match:
-            return match.group(1)
+            match = re.search(r'profile_id=(\d+)', html)
+            if match:
+                return match.group(1)
 
-        return None
+            return None
     except Exception:
         return None
+
+async def extract_ids_async(urls):
+    ids = []
+    connector = aiohttp.TCPConnector(limit=100)  # تحكم في العدد لو عايز
+    async with aiohttp.ClientSession(connector=connector) as session:
+        tasks = [fetch(session, url.strip()) for url in urls if url.strip()]
+        results = await asyncio.gather(*tasks)
+
+        for fb_id in results:
+            if fb_id:
+                ids.append(fb_id)
+
+    return ids
 
 @app.route('/')
 def home():
@@ -38,19 +51,7 @@ def extract_ids():
     data = request.get_json()
     urls = data.get("urls", [])
 
-    ids = []
-
-    def process(url):
-        url = url.strip()
-        if url:
-            fb_id = get_fb_id(url)
-            return fb_id
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
-        results = executor.map(process, urls)
-        for fb_id in results:
-            if fb_id:
-                ids.append(fb_id)
+    ids = asyncio.run(extract_ids_async(urls))
 
     return jsonify(success=True, ids=ids)
 
