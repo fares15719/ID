@@ -46,7 +46,7 @@ def extract_ids():
             fb_id = get_fb_id(url)
             return fb_id
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=70) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
         results = executor.map(process, urls)
         for fb_id in results:
             if fb_id:
