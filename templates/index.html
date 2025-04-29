@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Facebook ID Extractor 🔎</title>
+</head>
+<body style="font-family: Arial; text-align: center; padding-top: 50px;">
+    <h1>Facebook ID Extractor 🔥</h1>
+
+    <input type="text" id="fbLink" placeholder="Paste Facebook link here" style="width: 300px; padding: 10px;">
+    <br><br>
+    <button onclick="getID()" style="padding: 10px 20px;">Extract ID</button>
+
+    <h3>Result:</h3>
+    <textarea id="result" rows="5" cols="50" readonly></textarea>
+
+    <script>
+        async function getID() {
+            const link = document.getElementById('fbLink').value.trim();
+            const resultArea = document.getElementById('result');
+            resultArea.value = "Loading...";
+
+            const response = await fetch('/get_id', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: link })
+            });
+
+            const data = await response.json();
+            if (data.fb_id) {
+                resultArea.value = data.fb_id;
+            } else {
+                resultArea.value = "ID not found or invalid link.";
+            }
+        }
+    </script>
+</body>
+</html>
