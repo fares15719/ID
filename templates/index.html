@@ -1,145 +1,194 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Facebook ID </title>
+  <title>Facebook ID Extractor ✸ Fares Ayoub ✸</title>
   <style>
     body {
-      margin: 0;
-      padding: 0;
       background-color: #121212;
       color: #fff;
       font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      min-height: 100vh;
-      padding-top: 40px;
+      padding: 20px;
+      text-align: center;
     }
-    h1 {
-      margin-bottom: 20px;
-      font-size: 2rem;
+    .textarea-wrapper {
+      width: 90%;
+      max-width: 700px;
+      margin: 0 auto 20px auto;
     }
-    textarea, input, button {
-      font-size: 1rem;
-      border-radius: 8px;
-      border: none;
-      outline: none;
-      margin-bottom: 20px;
+    .counter-label {
+      text-align: right;
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #00bfa5;
     }
     textarea {
-      width: 90%;
-      max-width: 600px;
-      height: 150px;
-      padding: 12px;
-      resize: vertical;
-      background-color: #1e1e1e;
-      color: #fff;
-      border: 1px solid #444;
-    }
-    button {
-      padding: 12px 24px;
-      background-color: #03dac5;
-      color: #000;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    button:hover {
-      background-color: #00bfa5;
-    }
-    #resultBox {
-      display: none;
-      width: 90%;
-      max-width: 600px;
-      flex-direction: column;
-      align-items: center;
-    }
-    #result {
       width: 100%;
-      height: 200px;
-      margin-top: 10px;
+      height: 250px;
+      padding: 15px;
       background-color: #1e1e1e;
       color: #00ff90;
-      padding: 12px;
       border: 1px solid #444;
+      border-radius: 6px;
       resize: vertical;
+      font-size: 1rem;
     }
-    #copyBtn {
-      margin-top: 10px;
+    button {
+      margin: 10px;
       padding: 10px 20px;
-      background-color: #444;
-      color: #fff;
-      transition: 0.3s;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      background-color: #2196f3;
+      color: white;
+      transition: background-color 0.3s, transform 0.2s;
     }
-    #copyBtn:hover {
-      background-color: #666;
+    button:hover {
+      background-color: #0b79d0;
+      transform: scale(1.05);
+    }
+    .header-box {
+      margin-bottom: 20px;
+      background: #1e1e1e;
+      padding: 15px;
+      border-radius: 8px;
+    }
+    .welcome-box { margin-top: 10px; }
+    .tool-toggle {
+      margin-bottom: 20px;
+    }
+    iframe {
+      width: 100%;
+      max-width: 900px;
+      height: 650px;
+      border: none;
+      border-radius: 10px;
+      background-color: #1e1e1e;
     }
   </style>
 </head>
 <body>
 
-  <h1>Facebook ID </h1>
-
-  <textarea id="fbLinks" placeholder="Paste Facebook links, one per line..."></textarea>
-  <br>
-  <button onclick="extractIDs()">Extract IDs</button>
-
-  <div id="resultBox">
-    <textarea id="result" readonly></textarea>
-    <button id="copyBtn" onclick="copyAll()">Copy All</button>
+<div class="header-box">
+  <h2>✸ Fares Ayoub ✸</h2>
+  <div class="welcome-box">
+    <div class="verse" style="color: green;">
+      📖 إِنَّ اللَّهَ وَمَلَائِكَتَهُ يُصَلُّونَ عَلَى النَّبِيِّ ۚ يَا أَيُّهَا الَّذِينَ آمَنُوا صَلُّوا عَلَيْهِ وَسَلِّمُوا تَسْلِيمًا
+    </div>
+    <div class="welcome-message">🤝 مرحبا بك يا صديقي العزيز أنا هنا لمساعدتك 🌟</div>
+    <div class="whatsapp">📱 رقم الواتساب: 01211584356</div>
   </div>
+</div>
 
-  <script>
-    async function extractIDs() {
-      const textarea = document.getElementById("fbLinks");
-      const resultBox = document.getElementById("resultBox");
-      const resultArea = document.getElementById("result");
-      const copyBtn = document.getElementById("copyBtn");
+<div class="tool-toggle">
+  <button onclick="showTool('extractor')">🆔 ID Extractor</button>
+  <button onclick="showTool('checker')" style="background-color: #ff9800;">🧪 UID Checker</button>
+</div>
 
-      const links = textarea.value.split('\n').map(link => link.trim()).filter(Boolean);
-      if (links.length === 0) {
-        alert("Please enter at least one link.");
-        return;
-      }
+<div id="extractorTool">
+  <div class="textarea-wrapper">
+    <div class="counter-label">📥 عدد الروابط: (<span id="inputCount">0</span>)</div>
+    <textarea id="fbLinks" placeholder="ألصق روابط فيسبوك هنا كل رابط في سطر..." oninput="updateCounters()"></textarea>
+  </div>
+  <input type="file" id="fileInput" accept=".txt,.csv,.json" />
+  <br>
+  <button onclick="extractIDs()" id="extractBtn">🚀 استخراج الإيديهات</button>
 
-      resultBox.style.display = 'flex';
-      resultArea.value = "Processing...";
-      copyBtn.innerText = "Copy All";
-      copyBtn.style.backgroundColor = "#444";
+  <div id="resultBox" style="display:none;">
+    <div class="textarea-wrapper">
+      <div class="counter-label">📤 عدد الإيديهات: (<span id="resultCount">0</span>)</div>
+      <textarea id="result" readonly></textarea>
+    </div>
+    <br>
+    <button id="copyBtn" onclick="copyAll()">📋 نسخ الكل</button>
+    <button id="downloadBtn" onclick="downloadResults()">💾 تحميل كملف .txt</button>
+  </div>
+</div>
 
-      const res = await fetch("/get_ids", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ urls: links })
-      });
+<div id="checkerTool" style="display:none;">
+  <iframe src="https://2fa.page/check_live_uid.php/"></iframe>
+</div>
 
-      const data = await res.json();
-      if (data.success) {
-        resultArea.value = data.ids.join("\n");
-      } else {
-        resultArea.value = "Error extracting IDs.";
-      }
+<script>
+  function showTool(tool) {
+    document.getElementById("extractorTool").style.display = tool === 'extractor' ? 'block' : 'none';
+    document.getElementById("checkerTool").style.display = tool === 'checker' ? 'block' : 'none';
+  }
+
+  async function extractIDs() {
+    const textarea = document.getElementById("fbLinks");
+    const resultBox = document.getElementById("resultBox");
+    const resultArea = document.getElementById("result");
+    const copyBtn = document.getElementById("copyBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const extractBtn = document.getElementById("extractBtn");
+    const links = textarea.value.split('\n').map(link => link.trim()).filter(Boolean);
+
+    if (links.length === 0) return alert("يرجى إدخال روابط أولاً");
+
+    resultBox.style.display = 'block';
+    resultArea.value = "⏳ جاري استخراج الإيديهات...";
+    extractBtn.innerText = "🔄 جاري المعالجة...";
+    extractBtn.disabled = true;
+
+    const res = await fetch("/get_ids", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ urls: links })
+    });
+
+    const data = await res.json();
+    extractBtn.innerText = "🚀 استخراج الإيديهات";
+    extractBtn.disabled = false;
+
+    if (data.success) {
+      resultArea.value = data.ids.join("\n");
+      document.getElementById("resultCount").innerText = data.ids.length;
+    } else {
+      resultArea.value = "❌ حدث خطأ أثناء استخراج الإيديهات";
     }
+  }
 
-    function copyAll() {
-      const resultArea = document.getElementById("result");
-      const copyBtn = document.getElementById("copyBtn");
+  function copyAll() {
+    const resultArea = document.getElementById("result");
+    resultArea.select();
+    document.execCommand("copy");
+    const btn = document.getElementById("copyBtn");
+    btn.innerText = "✔ تم النسخ!";
+    btn.style.backgroundColor = "#4caf50";
+    setTimeout(() => {
+      btn.innerText = "📋 نسخ الكل";
+      btn.style.backgroundColor = "#2196f3";
+    }, 2000);
+  }
 
-      resultArea.select();
-      document.execCommand("copy");
+  function downloadResults() {
+    const resultArea = document.getElementById("result");
+    const blob = new Blob([resultArea.value], { type: "text/plain;charset=utf-8" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "facebook_ids.txt";
+    link.click();
+  }
 
-      copyBtn.innerText = "✅ Copied!";
-      copyBtn.style.backgroundColor = "#00c853";
+  function updateCounters() {
+    const count = document.getElementById("fbLinks").value.split('\n').filter(Boolean).length;
+    document.getElementById("inputCount").innerText = count;
+  }
 
-      setTimeout(() => {
-        copyBtn.innerText = "Copy All";
-        copyBtn.style.backgroundColor = "#444";
-      }, 2000);
-    }
-  </script>
+  document.getElementById("fileInput").addEventListener("change", function(e) {
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      document.getElementById("fbLinks").value = event.target.result;
+      updateCounters();
+    };
+    reader.readAsText(e.target.files[0]);
+  });
+</script>
 
 </body>
 </html>
