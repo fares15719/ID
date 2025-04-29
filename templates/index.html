@@ -61,13 +61,34 @@
     .tool-toggle {
       margin-bottom: 20px;
     }
+    .iframe-wrapper {
+      background-color: #1e1e1e;
+      overflow: hidden;
+      border-radius: 10px;
+      padding-top: 60px;
+      position: relative;
+    }
     iframe {
       width: 100%;
-      max-width: 900px;
-      height: 650px;
+      height: 800px;
       border: none;
-      border-radius: 10px;
-      background-color: #1e1e1e;
+      transform: translateY(-60px);
+    }
+    @media (max-width: 768px) {
+      .textarea-wrapper, iframe {
+        width: 95%;
+        max-width: 95%;
+      }
+      textarea {
+        height: 200px;
+      }
+      iframe {
+        height: 600px;
+      }
+      button {
+        width: 90%;
+        margin: 5px auto;
+      }
     }
   </style>
 </head>
@@ -77,7 +98,7 @@
   <h2>✸ Fares Ayoub ✸</h2>
   <div class="welcome-box">
     <div class="verse" style="color: green;">
-      📖 إِنَّ اللَّهَ وَمَلَائِكَتَهُ يُصَلُّونَ عَلَى النَّبِيِّ ۚ يَا أَيُّهَا الَّذِينَ آمَنُوا صَلُّوا عَلَيْهِ وَسَلِّمُوا تَسْلِيمًا
+      📖 إِنَّ اللَّهَ وَمَلَائِكَتَهُ يُصَلُّونَ عَلَى النَّبِيِّ ۚ يَا أَيُّهَا الَّذِينَ آمَنُوا صَلُّوا عَلَيْهِ وَسَلِّمُوا تَسْلِيمًا
     </div>
     <div class="welcome-message">🤝 مرحبا بك يا صديقي العزيز أنا هنا لمساعدتك 🌟</div>
     <div class="whatsapp">📱 رقم الواتساب: 01211584356</div>
@@ -110,7 +131,9 @@
 </div>
 
 <div id="checkerTool" style="display:none;">
-  <iframe src="https://2fa.page/check_live_uid.php/"></iframe>
+  <div class="iframe-wrapper">
+    <iframe src="https://2fa.page/check_live_uid.php/"></iframe>
+  </div>
 </div>
 
 <script>
