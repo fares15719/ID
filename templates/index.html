@@ -114,14 +114,14 @@
       overflow: hidden;
       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
       position: relative;
-      padding-top: 60px; /* قص من فوق */
+      padding-top: 120px; /* قص أكبر عشان يشمل الجزء العلوي كله */
     }
     iframe {
       width: 100%;
       height: 500px;
       border: none;
-      transform: translateY(-60px); /* يرجع الإطار لفوق عشان يتقص الجزء العلوي بس */
-      filter: invert(90%) hue-rotate(180deg); /* محاولة لتحويل الألوان لـ Dark Mode */
+      transform: translateY(-120px); /* يرجع الإطار لفوق عشان يتقص الجزء العلوي بالكامل */
+      filter: invert(90%) hue-rotate(180deg); /* لتحويل الألوان لـ Dark Mode */
     }
     @media (max-width: 600px) {
       body {
@@ -145,11 +145,11 @@
         padding: 10px;
       }
       .iframe-wrapper {
-        padding-top: 40px; /* قص أقل من فوق على الموبايل */
+        padding-top: 100px; /* قص أقل على الموبايل */
       }
       iframe {
         height: 400px;
-        transform: translateY(-40px);
+        transform: translateY(-100px);
       }
     }
   </style>
