@@ -1,6 +1,7 @@
-from flask import Flask, request, jsonify, render_template
+import concurrent.futures
 import requests
 import re
+from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__, template_folder='templates')
 
@@ -36,12 +37,18 @@ def home():
 def extract_ids():
     data = request.get_json()
     urls = data.get("urls", [])
+
     ids = []
 
-    for url in urls:
+    def process(url):
         url = url.strip()
         if url:
             fb_id = get_fb_id(url)
+            return fb_id
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=40) as executor:
+        results = executor.map(process, urls)
+        for fb_id in results:
             if fb_id:
                 ids.append(fb_id)
 
