@@ -114,14 +114,14 @@
       overflow: hidden;
       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
       position: relative;
-      padding-top: 160px; /* قص أكبر عشان يشمل الجزء العلوي كله */
+      padding-top: 60px;
     }
     iframe {
       width: 100%;
       height: 500px;
       border: none;
-      transform: translateY(-160px); /* يرجع الإطار لفوق عشان يتقص الجزء العلوي بالكامل */
-      filter: invert(90%) hue-rotate(180deg); /* لتحويل الألوان لـ Dark Mode */
+      transform: translateY(-60px);
+      filter: invert(90%) hue-rotate(180deg);
     }
     @media (max-width: 600px) {
       body {
@@ -145,11 +145,11 @@
         padding: 10px;
       }
       .iframe-wrapper {
-        padding-top: 140px; /* قص أقل على الموبايل */
+        padding-top: 40px;
       }
       iframe {
         height: 400px;
-        transform: translateY(-140px);
+        transform: translateY(-40px);
       }
     }
   </style>
@@ -173,20 +173,27 @@
     </div>
 
     <div id="extractorTool">
+      <!-- جزء رفع الملفات فوق الـ textarea -->
+      <input type="file" id="fileInput" accept=".txt,.csv,.json" />
+      
+      <!-- مربع النص بتاع الروابط -->
       <div class="textarea-wrapper">
         <div class="counter-label">📥 عدد الروابط: (<span id="inputCount">0</span>)</div>
         <textarea id="fbLinks" placeholder="ألصق روابط فيسبوك هنا كل رابط في سطر..." oninput="updateCounters()"></textarea>
       </div>
-      <input type="file" id="fileInput" accept=".txt,.csv,.json" />
+      
       <div class="button-group">
         <button onclick="extractIDs()" id="extractBtn">🚀 استخراج الإيديهات</button>
       </div>
 
       <div id="resultBox" style="display:none;">
+        <!-- مربع النص بتاع النتيجة -->
         <div class="textarea-wrapper">
           <div class="counter-label">📤 عدد الإيديهات: (<span id="resultCount">0</span>)</div>
           <textarea id="result" readonly></textarea>
         </div>
+        
+        <!-- أزرار النسخ والتحميل تحت الـ textarea -->
         <div class="button-group">
           <button id="copyBtn" onclick="copyAll()">📋 نسخ الكل</button>
           <button id="downloadBtn" onclick="downloadResults()">💾 تحميل كملف .txt</button>
