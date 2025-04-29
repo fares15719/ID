@@ -32,12 +32,20 @@ def get_fb_id(url):
 def home():
     return render_template("index.html")
 
-@app.route('/get_id', methods=['POST'])
-def extract_id():
+@app.route('/get_ids', methods=['POST'])
+def extract_ids():
     data = request.get_json()
-    url = data.get("url")
-    fb_id = get_fb_id(url)
-    return jsonify({"fb_id": fb_id})
+    urls = data.get("urls", [])
+    ids = []
+
+    for url in urls:
+        url = url.strip()
+        if url:
+            fb_id = get_fb_id(url)
+            if fb_id:
+                ids.append(fb_id)
+
+    return jsonify(success=True, ids=ids)
 
 if __name__ == '__main__':
     app.run()
