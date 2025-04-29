@@ -1,38 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Facebook ID Extractor 🔎</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Facebook ID Extractor 🔥</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #121212;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding-top: 40px;
+    }
+    h1 {
+      margin-bottom: 20px;
+      font-size: 2rem;
+    }
+    textarea, input, button {
+      font-size: 1rem;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      margin-bottom: 20px;
+    }
+    textarea {
+      width: 90%;
+      max-width: 600px;
+      height: 150px;
+      padding: 12px;
+      resize: vertical;
+      background-color: #1e1e1e;
+      color: #fff;
+      border: 1px solid #444;
+    }
+    button {
+      padding: 12px 24px;
+      background-color: #03dac5;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background-color: #00bfa5;
+    }
+    #resultBox {
+      display: none;
+      width: 90%;
+      max-width: 600px;
+      flex-direction: column;
+      align-items: center;
+    }
+    #result {
+      width: 100%;
+      height: 200px;
+      margin-top: 10px;
+      background-color: #1e1e1e;
+      color: #00ff90;
+      padding: 12px;
+      border: 1px solid #444;
+      resize: vertical;
+    }
+    #copyBtn {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #444;
+      color: #fff;
+      transition: 0.3s;
+    }
+    #copyBtn:hover {
+      background-color: #666;
+    }
+  </style>
 </head>
-<body style="font-family: Arial; text-align: center; padding-top: 50px;">
-    <h1>Facebook ID Extractor 🔥</h1>
+<body>
 
-    <input type="text" id="fbLink" placeholder="Paste Facebook link here" style="width: 300px; padding: 10px;">
-    <br><br>
-    <button onclick="getID()" style="padding: 10px 20px;">Extract ID</button>
+  <h1>Facebook ID Extractor 🔥</h1>
 
-    <h3>Result:</h3>
-    <textarea id="result" rows="5" cols="50" readonly></textarea>
+  <textarea id="fbLinks" placeholder="Paste Facebook links, one per line..."></textarea>
+  <br>
+  <button onclick="extractIDs()">Extract IDs</button>
 
-    <script>
-        async function getID() {
-            const link = document.getElementById('fbLink').value.trim();
-            const resultArea = document.getElementById('result');
-            resultArea.value = "Loading...";
+  <div id="resultBox">
+    <textarea id="result" readonly></textarea>
+    <button id="copyBtn" onclick="copyAll()">Copy All</button>
+  </div>
 
-            const response = await fetch('/get_id', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url: link })
-            });
+  <script>
+    async function extractIDs() {
+      const textarea = document.getElementById("fbLinks");
+      const resultBox = document.getElementById("resultBox");
+      const resultArea = document.getElementById("result");
+      const copyBtn = document.getElementById("copyBtn");
 
-            const data = await response.json();
-            if (data.fb_id) {
-                resultArea.value = data.fb_id;
-            } else {
-                resultArea.value = "ID not found or invalid link.";
-            }
-        }
-    </script>
+      const links = textarea.value.split('\n').map(link => link.trim()).filter(Boolean);
+      if (links.length === 0) {
+        alert("Please enter at least one link.");
+        return;
+      }
+
+      resultBox.style.display = 'flex';
+      resultArea.value = "Processing...";
+      copyBtn.innerText = "Copy All";
+      copyBtn.style.backgroundColor = "#444";
+
+      const res = await fetch("/get_ids", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ urls: links })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        resultArea.value = data.ids.join("\n");
+      } else {
+        resultArea.value = "Error extracting IDs.";
+      }
+    }
+
+    function copyAll() {
+      const resultArea = document.getElementById("result");
+      const copyBtn = document.getElementById("copyBtn");
+
+      resultArea.select();
+      document.execCommand("copy");
+
+      copyBtn.innerText = "✅ Copied!";
+      copyBtn.style.backgroundColor = "#00c853";
+
+      setTimeout(() => {
+        copyBtn.innerText = "Copy All";
+        copyBtn.style.backgroundColor = "#444";
+      }, 2000);
+    }
+  </script>
+
 </body>
 </html>
