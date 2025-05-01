@@ -31,16 +31,19 @@ async def fetch(session, url):
 
 async def extract_ids_async(urls):
     ids = []
-    connector = aiohttp.TCPConnector(limit=100)  # تحكم في العدد لو عايز
+    invalid_urls = []
+    connector = aiohttp.TCPConnector(limit=100)
     async with aiohttp.ClientSession(connector=connector) as session:
         tasks = [fetch(session, url.strip()) for url in urls if url.strip()]
         results = await asyncio.gather(*tasks)
 
-        for fb_id in results:
+        for url, fb_id in zip(urls, results):
             if fb_id:
                 ids.append(fb_id)
+            else:
+                invalid_urls.append(url.strip())
 
-    return ids
+    return ids, invalid_urls
 
 @app.route('/')
 def home():
@@ -51,9 +54,9 @@ def extract_ids():
     data = request.get_json()
     urls = data.get("urls", [])
 
-    ids = asyncio.run(extract_ids_async(urls))
+    ids, invalid_urls = asyncio.run(extract_ids_async(urls))
 
-    return jsonify(success=True, ids=ids)
+    return jsonify(success=True, ids=ids, invalid_urls=invalid_urls)
 
 if __name__ == '__main__':
     app.run()
