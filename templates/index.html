@@ -103,15 +103,7 @@
       border-radius: 6px;
       padding: 10px;
       color: #fff;
-<<<<<<< HEAD
       font-family: 'Tajawal', sans-serif;
-=======
-<<<<<<< HEAD
-      font-family: 'Tajawal', sans-serif;
-=======
-           font-family: 'Tajawal', sans-serif;
->>>>>>> a2ef980b1671de2663a08781450ce9e1f8988f5a
->>>>>>> 693fb99142f616b9eeeacd9b644b1702eecb2b70
       width: 100%;
       box-sizing: border-box;
       margin: 10px 0;
@@ -184,10 +176,6 @@
       <!-- جزء رفع الملفات فوق الـ textarea -->
       <input type="file" id="fileInput" accept=".txt,.csv,.json" />
       
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 693fb99142f616b9eeeacd9b644b1702eecb2b70
       <!-- مربع النص بتاع الروابط أو الإيديهات -->
       <div class="textarea-wrapper">
         <div class="counter-label">📥 عدد السطور: (<span id="inputCount">0</span>)</div>
@@ -206,38 +194,11 @@
         </div>
         
         <!-- أزرار النسخ والتحميل للشغال -->
-<<<<<<< HEAD
-=======
-=======
-      <!-- مربع النص بتاع الروابط -->
-      <div class="textarea-wrapper">
-        <div class="counter-label">📥 عدد الروابط: (<span id="inputCount">0</span>)</div>
-        <textarea id="fbLinks" placeholder="ألصق روابط فيسبوك هنا كل رابط في سطر..." oninput="updateCounters()"></textarea>
-      </div>
-      
-      <div class="button-group">
-        <button onclick="extractIDs()" id="extractBtn">🚀 استخراج الإيديهات</button>
-      </div>
-
-      <div id="resultBox" style="display:none;">
-        <!-- مربع النص بتاع الإيديهات -->
-        <div class="textarea-wrapper">
-          <div class="counter-label">📤 عدد الإيديهات: (<span id="resultCount">0</span>)</div>
-          <textarea id="result" readonly></textarea>
-        </div>
-        
-        <!-- أزرار النسخ والتحميل للإيديهات -->
->>>>>>> a2ef980b1671de2663a08781450ce9e1f8988f5a
->>>>>>> 693fb99142f616b9eeeacd9b644b1702eecb2b70
         <div class="button-group">
           <button id="copyBtn" onclick="copyAll()">📋 نسخ الكل</button>
           <button id="downloadBtn" onclick="downloadResults()">💾 تحميل كملف .txt</button>
         </div>
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 693fb99142f616b9eeeacd9b644b1702eecb2b70
         <!-- مربع النص بتاع المقفول -->
         <div class="textarea-wrapper">
           <div class="counter-label">🚫 عدد المقفول: (<span id="invalidCount">0</span>)</div>
@@ -248,21 +209,6 @@
         <div class="button-group">
           <button id="copyInvalidBtn" onclick="copyInvalid()">📋 نسخ المقفول</button>
           <button id="downloadInvalidBtn" onclick="downloadInvalid()">💾 تحميل المقفول</button>
-<<<<<<< HEAD
-=======
-=======
-        <!-- مربع النص بتاع الروابط المقفولة -->
-        <div class="textarea-wrapper">
-          <div class="counter-label">🚫 عدد الروابط المقفولة: (<span id="invalidCount">0</span>)</div>
-          <textarea id="invalidUrls" readonly></textarea>
-        </div>
-        
-        <!-- أزرار النسخ والتحميل للروابط المقفولة legumes-->
-        <div class="button-group">
-          <button id="copyInvalidBtn" onclick="copyInvalid()">📋 نسخ الروابط المقفولة</button>
-          <button id="downloadInvalidBtn" onclick="downloadInvalid()">💾 تحميل الروابط المقفولة</button>
->>>>>>> a2ef980b1671de2663a08781450ce9e1f8988f5a
->>>>>>> 693fb99142f616b9eeeacd9b644b1702eecb2b70
         </div>
       </div>
     </div>
@@ -290,10 +236,6 @@
       const copyInvalidBtn = document.getElementById("copyInvalidBtn");
       const downloadInvalidBtn = document.getElementById("downloadInvalidBtn");
       const extractBtn = document.getElementById("extractBtn");
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 693fb99142f616b9eeeacd9b644b1702eecb2b70
       const inputs = textarea.value.split('\n').map(line => line.trim()).filter(Boolean);
 
       if (inputs.length === 0) return alert("يرجى إدخال روابط أو إيديهات أولاً");
@@ -301,28 +243,12 @@
       resultBox.style.display = 'block';
       resultArea.value = "⏳ جاري فحص الإدخال...";
       invalidArea.value = "⏳ جاري التحقق من المقفول...";
-<<<<<<< HEAD
-=======
-=======
-      const links = textarea.value.split('\n').map(link => link.trim()).filter(Boolean);
-
-      if (links.length === 0) return alert("يرجى إدخال روابط أولاً");
-
-      resultBox.style.display = 'block';
-      resultArea.value = "⏳ جاري استخراج الإيديهات...";
-      invalidArea.value = "⏳ جاري التحقق من الروابط...";
->>>>>>> a2ef980b1671de2663a08781450ce9e1f8988f5a
->>>>>>> 693fb99142f616b9eeeacd9b644b1702eecb2b70
       extractBtn.innerText = "🔄 جاري المعالجة...";
       extractBtn.disabled = true;
 
       const res = await fetch("/get_ids", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 693fb99142f616b9eeeacd9b644b1702eecb2b70
         body: JSON.stringify({ urls: inputs })
       });
 
@@ -338,26 +264,6 @@
       } else {
         resultArea.value = "❌ حدث خطأ أثناء فحص الإدخال";
         invalidArea.value = "❌ حدث خطأ أثناء التحقق من المقفول";
-<<<<<<< HEAD
-=======
-=======
-        body: JSON.stringify({ urls: links })
-      });
-
-      const data = await res.json();
-      extractBtn.innerText = "🚀 استخراج الإيديهات";
-      extractBtn.disabled = false;
-
-      if (data.success) {
-        resultArea.value = data.ids.join("\n");
-        document.getElementById("resultCount").innerText = data.ids.length;
-        invalidArea.value = data.invalid_urls.join("\n");
-        document.getElementById("invalidCount").innerText = data.invalid_urls.length;
-      } else {
-        resultArea.value = "❌ حدث خطأ أثناء استخراج الإيديهات";
-        invalidArea.value = "❌ حدث خطأ أثناء التحقق من الروابط";
->>>>>>> a2ef980b1671de2663a08781450ce9e1f8988f5a
->>>>>>> 693fb99142f616b9eeeacd9b644b1702eecb2b70
       }
     }
 
@@ -379,15 +285,7 @@
       const blob = new Blob([resultArea.value], { type: "text/plain;charset=utf-8" });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-<<<<<<< HEAD
       link.download = "valid_results.txt";
-=======
-<<<<<<< HEAD
-      link.download = "valid_results.txt";
-=======
-      link.download = "facebook_ids.txt";
->>>>>>> a2ef980b1671de2663a08781450ce9e1f8988f5a
->>>>>>> 693fb99142f616b9eeeacd9b644b1702eecb2b70
       link.click();
     }
 
@@ -399,15 +297,7 @@
       btn.innerText = "✔ تم النسخ!";
       btn.style.backgroundColor = "#4caf50";
       setTimeout(() => {
-<<<<<<< HEAD
         btn.innerText = "📋 نسخ المقفول";
-=======
-<<<<<<< HEAD
-        btn.innerText = "📋 نسخ المقفول";
-=======
-        btn.innerText = "📋 نسخ الروابط المقفولة";
->>>>>>> a2ef980b1671de2663a08781450ce9e1f8988f5a
->>>>>>> 693fb99142f616b9eeeacd9b644b1702eecb2b70
         btn.style.backgroundColor = "#007bff";
       }, 2000);
     }
@@ -417,15 +307,7 @@
       const blob = new Blob([invalidArea.value], { type: "text/plain;charset=utf-8" });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-<<<<<<< HEAD
       link.download = "invalid_results.txt";
-=======
-<<<<<<< HEAD
-      link.download = "invalid_results.txt";
-=======
-      link.download = "invalid_urls.txt";
->>>>>>> a2ef980b1671de2663a08781450ce9e1f8988f5a
->>>>>>> 693fb99142f616b9eeeacd9b644b1702eecb2b70
       link.click();
     }
 
