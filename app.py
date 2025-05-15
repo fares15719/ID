@@ -7,12 +7,35 @@ app = Flask(__name__, template_folder='templates')
 
 async def fetch(session, url):
     headers = {
-        'User-Agent': 'Mozilla/5.0'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
     try:
-        async with session.get(url, headers=headers, timeout=10) as response:
+        # محاولة استخراج الإيدي من عنوان URL أولاً
+        match = re.search(r'(?:id=|fbid=)(\d+)', url)
+        if match:
+            return match.group(1)
+
+        # إجراء طلب HTTP
+        async with session.get(url, headers=headers, timeout=10, allow_redirects=True) as response:
+            # التحقق من حالة الاستجابة
+            if response.status != 200:
+                # إذا كان الرابط يُرجع خطأ (مثل 404 أو 403)، نعتبره مقفول
+                return None
+
             html = await response.text()
 
+            # التحقق من وجود رسالة "محتوى غير متاح" أو "الحساب محظور"
+            if any(phrase in html.lower() for phrase in [
+                "this content isn't available",
+                "this page isn't available",
+                "account has been disabled",
+                "محتوى غير متاح",
+                "هذه الصفحة غير متاحة",
+                "الحساب تم تعطيله"
+            ]):
+                return None
+
+            # محاولة استخراج الإيدي من الـ HTML
             match = re.search(r'fb://profile/(\d+)', html)
             if match:
                 return match.group(1)
@@ -25,14 +48,20 @@ async def fetch(session, url):
             if match:
                 return match.group(1)
 
+            # محاولة استخراج الإيدي من روابط إعادة التوجيه أو البيانات الوصفية
+            match = re.search(r'"userID":"(\d+)"', html)
+            if match:
+                return match.group(1)
+
             return None
-    except Exception:
+    except Exception as e:
+        # إذا حدث خطأ (مثل انتهاء المهلة أو فشل الاتصال)، نعتبر الرابط مقفول
         return None
 
 async def extract_ids_async(urls):
     ids = []
     failed_urls = []
-    connector = aiohttp.TCPConnector(limit=100)  # تحكم في العدد徐
+    connector = aiohttp.TCPConnector(limit=100)  # تحكم في العدد
     async with aiohttp.ClientSession(connector=connector) as session:
         tasks = []
         url_map = {}  # لربط الروابط بنتائجها
