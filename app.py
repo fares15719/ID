@@ -25,6 +25,11 @@ async def fetch(session, url):
             # تسجيل رمز الاستجابة
             logging.debug(f"HTTP status for {url}: {response.status}")
 
+            # التحقق من رمز الاستجابة
+            if response.status not in [200, 302]:
+                logging.debug(f"Non-200/302 status for {url}: {response.status}")
+                return None
+
             html = await response.text()
 
             # التحقق من عبارات تشير إلى حساب مقفول
