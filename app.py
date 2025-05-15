@@ -1,83 +1,114 @@
 import asyncio
 import aiohttp
 import re
+import logging
 from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__, template_folder='templates')
+
+# إعداد التسجيل لتصحيح الأخطاء
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 async def fetch(session, url):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
     try:
+        # محاولة استخراج الإيدي من عنوان URL أولاً
+        match = re.search(r'(?:id=|fbid=)(\d+)', url)
+        if match:
+            logging.debug(f"ID extracted from URL for {url}: {match.group(1)}")
+            return match.group(1)
+
         # إجراء طلب HTTP
         async with session.get(url, headers=headers, timeout=10, allow_redirects=True) as response:
+            # تسجيل رمز الاستجابة
+            logging.debug(f"HTTP status for {url}: {response.status}")
+
             # التحقق من رمز الاستجابة
-            if response.status != 200:
-                return None  # إذا كان الرابط يُرجع خطأ (مثل 404 أو 403)، نعتبره مقفول
+            if response.status not in [200, 302]:
+                logging.debug(f"Non-200/302 status for {url}: {response.status}")
+                return None
 
             html = await response.text()
 
-            # التحقق من وجود عبارات تشير إلى حساب مقفول أو محتوى غير متاح
+            # التحقق من عبارات تشير إلى حساب مقفول فقط
             blocked_indicators = [
+                "account has been disabled",
+                "this account is not available",
+                "الحساب تم تعطيله",
+                "هذا الحساب غير متاح"
+            ]
+            for phrase in blocked_indicators:
+                if phrase in html.lower():
+                    logging.debug(f"Blocked indicator found in {url}: {phrase}")
+                    return None
+
+            # التحقق من عبارات أقل تأكيدًا بشروط إضافية
+            soft_block_indicators = [
                 "this content isn't available",
                 "this page isn't available",
-                "account has been disabled",
                 "sorry, this content isn't available right now",
                 "the link you followed may be broken",
-                "this account is not available",
                 "محتوى غير متاح",
                 "هذه الصفحة غير متاحة",
-                "الحساب تم تعطيله",
                 "عذرًا، هذا المحتوى غير متاح حاليًا",
                 "الرابط الذي تتبعه قد يكون معطوبًا"
             ]
-            if any(phrase in html.lower() for phrase in blocked_indicators):
-                return None  # إذا تم اكتشاف حظر، نرجع None بغض النظر عن وجود إيدي
-
-            # محاولة استخراج الإيدي من عنوان URL
-            match = re.search(r'(?:id=|fbid=)(\d+)', url)
-            if match:
-                return match.group(1)
+            if any(phrase in html.lower() for phrase in soft_block_indicators):
+                # التحقق من وجود إيدي قبل اعتبار الرابط مقفول
+                match = re.search(r'(?:fb://profile/|entity_id":"|profile_id=|userID":"|data-profileid=")(\d+)"?', html)
+                if not match:
+                    logging.debug(f"Soft block indicator found in {url} with no ID: {soft_block_indicators}")
+                    return None
 
             # محاولة استخراج الإيدي من الـ HTML
             match = re.search(r'fb://profile/(\d+)', html)
             if match:
+                logging.debug(f"ID extracted from fb://profile for {url}: {match.group(1)}")
                 return match.group(1)
 
             match = re.search(r'"entity_id":"(\d+)"', html)
             if match:
+                logging.debug(f"ID extracted from entity_id for {url}: {match.group(1)}")
                 return match.group(1)
 
             match = re.search(r'profile_id=(\d+)', html)
             if match:
+                logging.debug(f"ID extracted from profile_id for {url}: {match.group(1)}")
                 return match.group(1)
 
             match = re.search(r'"userID":"(\d+)"', html)
             if match:
+                logging.debug(f"ID extracted from userID for {url}: {match.group(1)}")
                 return match.group(1)
 
-            return None  # إذا لم يتم العثور على إيدي، نعتبر الرابط فاشل
+            match = re.search(r'data-profileid="(\d+)"', html)
+            if match:
+                logging.debug(f"ID extracted from data-profileid for {url}: {match.group(1)}")
+                return match.group(1)
+
+            logging.debug(f"No ID found for {url}")
+            return None
     except Exception as e:
-        # إذا حدث خطأ (مثل انتهاء المهلة أو فشل الاتصال)، نعتبر الرابط مقفول
+        logging.error(f"Exception for {url}: {str(e)}")
         return None
 
 async def extract_ids_async(urls):
     ids = []
     failed_urls = []
-    connector = aiohttp.TCPConnector(limit=100)  # تحكم في العدد
+    connector = aiohttp.TCPConnector(limit=100)
     async with aiohttp.ClientSession(connector=connector) as session:
         tasks = []
-        url_map = {}  # لربط الروابط بنتائجها
+        url_map = {}
         for url in urls:
             url = url.strip()
             if url:
                 tasks.append(fetch(session, url))
-                url_map[url] = None  # تهيئة الرابط بدون إيدي
+                url_map[url] = None
 
         results = await asyncio.gather(*tasks)
 
-        # ربط النتائج بالروابط
         for url, fb_id in zip([url.strip() for url in urls if url.strip()], results):
             if fb_id:
                 ids.append(fb_id)
