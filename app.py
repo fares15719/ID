@@ -10,30 +10,35 @@ async def fetch(session, url):
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
     try:
-        # محاولة استخراج الإيدي من عنوان URL أولاً
-        match = re.search(r'(?:id=|fbid=)(\d+)', url)
-        if match:
-            return match.group(1)
-
         # إجراء طلب HTTP
         async with session.get(url, headers=headers, timeout=10, allow_redirects=True) as response:
-            # التحقق من حالة الاستجابة
+            # التحقق من رمز الاستجابة
             if response.status != 200:
-                # إذا كان الرابط يُرجع خطأ (مثل 404 أو 403)، نعتبره مقفول
-                return None
+                return None  # إذا كان الرابط يُرجع خطأ (مثل 404 أو 403)، نعتبره مقفول
 
             html = await response.text()
 
-            # التحقق من وجود رسالة "محتوى غير متاح" أو "الحساب محظور"
-            if any(phrase in html.lower() for phrase in [
+            # التحقق من وجود عبارات تشير إلى حساب مقفول أو محتوى غير متاح
+            blocked_indicators = [
                 "this content isn't available",
                 "this page isn't available",
                 "account has been disabled",
+                "sorry, this content isn't available right now",
+                "the link you followed may be broken",
+                "this account is not available",
                 "محتوى غير متاح",
                 "هذه الصفحة غير متاحة",
-                "الحساب تم تعطيله"
-            ]):
-                return None
+                "الحساب تم تعطيله",
+                "عذرًا، هذا المحتوى غير متاح حاليًا",
+                "الرابط الذي تتبعه قد يكون معطوبًا"
+            ]
+            if any(phrase in html.lower() for phrase in blocked_indicators):
+                return None  # إذا تم اكتشاف حظر، نرجع None بغض النظر عن وجود إيدي
+
+            # محاولة استخراج الإيدي من عنوان URL
+            match = re.search(r'(?:id=|fbid=)(\d+)', url)
+            if match:
+                return match.group(1)
 
             # محاولة استخراج الإيدي من الـ HTML
             match = re.search(r'fb://profile/(\d+)', html)
@@ -48,12 +53,11 @@ async def fetch(session, url):
             if match:
                 return match.group(1)
 
-            # محاولة استخراج الإيدي من روابط إعادة التوجيه أو البيانات الوصفية
             match = re.search(r'"userID":"(\d+)"', html)
             if match:
                 return match.group(1)
 
-            return None
+            return None  # إذا لم يتم العثور على إيدي، نعتبر الرابط فاشل
     except Exception as e:
         # إذا حدث خطأ (مثل انتهاء المهلة أو فشل الاتصال)، نعتبر الرابط مقفول
         return None
