@@ -176,39 +176,27 @@
       <!-- جزء رفع الملفات فوق الـ textarea -->
       <input type="file" id="fileInput" accept=".txt,.csv,.json" />
       
-      <!-- مربع النص بتاع الروابط أو الإيديهات -->
+      <!-- مربع النص بتاع الروابط -->
       <div class="textarea-wrapper">
-        <div class="counter-label">📥 عدد السطور: (<span id="inputCount">0</span>)</div>
-        <textarea id="fbLinks" placeholder="ألصق روابط فيسبوك أو إيديهات (كل سطر إيدي أو رابط)..." oninput="updateCounters()"></textarea>
+        <div class="counter-label">📥 عدد الروابط: (<span id="inputCount">0</span>)</div>
+        <textarea id="fbLinks" placeholder="ألصق روابط فيسبوك هنا كل رابط في سطر..." oninput="updateCounters()"></textarea>
       </div>
       
       <div class="button-group">
-        <button onclick="extractIDs()" id="extractBtn">🚀 فحص الإدخال</button>
+        <button onclick="extractIDs()" id="extractBtn">🚀 استخراج الإيديهات</button>
       </div>
 
       <div id="resultBox" style="display:none;">
-        <!-- مربع النص بتاع الإيديهات أو السطور الشغالة -->
+        <!-- مربع النص بتاع النتيجة -->
         <div class="textarea-wrapper">
-          <div class="counter-label">📤 عدد الشغال: (<span id="resultCount">0</span>)</div>
+          <div class="counter-label">📤 عدد الإيديهات: (<span id="resultCount">0</span>)</div>
           <textarea id="result" readonly></textarea>
         </div>
         
-        <!-- أزرار النسخ والتحميل للشغال -->
+        <!-- أزرار النسخ والتحميل تحت الـ textarea -->
         <div class="button-group">
           <button id="copyBtn" onclick="copyAll()">📋 نسخ الكل</button>
           <button id="downloadBtn" onclick="downloadResults()">💾 تحميل كملف .txt</button>
-        </div>
-
-        <!-- مربع النص بتاع المقفول -->
-        <div class="textarea-wrapper">
-          <div class="counter-label">🚫 عدد المقفول: (<span id="invalidCount">0</span>)</div>
-          <textarea id="invalidUrls" readonly></textarea>
-        </div>
-        
-        <!-- أزرار النسخ والتحميل للمقفول -->
-        <div class="button-group">
-          <button id="copyInvalidBtn" onclick="copyInvalid()">📋 نسخ المقفول</button>
-          <button id="downloadInvalidBtn" onclick="downloadInvalid()">💾 تحميل المقفول</button>
         </div>
       </div>
     </div>
@@ -230,40 +218,33 @@
       const textarea = document.getElementById("fbLinks");
       const resultBox = document.getElementById("resultBox");
       const resultArea = document.getElementById("result");
-      const invalidArea = document.getElementById("invalidUrls");
       const copyBtn = document.getElementById("copyBtn");
       const downloadBtn = document.getElementById("downloadBtn");
-      const copyInvalidBtn = document.getElementById("copyInvalidBtn");
-      const downloadInvalidBtn = document.getElementById("downloadInvalidBtn");
       const extractBtn = document.getElementById("extractBtn");
-      const inputs = textarea.value.split('\n').map(line => line.trim()).filter(Boolean);
+      const links = textarea.value.split('\n').map(link => link.trim()).filter(Boolean);
 
-      if (inputs.length === 0) return alert("يرجى إدخال روابط أو إيديهات أولاً");
+      if (links.length === 0) return alert("يرجى إدخال روابط أولاً");
 
       resultBox.style.display = 'block';
-      resultArea.value = "⏳ جاري فحص الإدخال...";
-      invalidArea.value = "⏳ جاري التحقق من المقفول...";
+      resultArea.value = "⏳ جاري استخراج الإيديهات...";
       extractBtn.innerText = "🔄 جاري المعالجة...";
       extractBtn.disabled = true;
 
       const res = await fetch("/get_ids", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ urls: inputs })
+        body: JSON.stringify({ urls: links })
       });
 
       const data = await res.json();
-      extractBtn.innerText = "🚀 فحص الإدخال";
+      extractBtn.innerText = "🚀 استخراج الإيديهات";
       extractBtn.disabled = false;
 
       if (data.success) {
-        resultArea.value = data.valid_results.join("\n");
-        document.getElementById("resultCount").innerText = data.valid_results.length;
-        invalidArea.value = data.invalid_results.join("\n");
-        document.getElementById("invalidCount").innerText = data.invalid_results.length;
+        resultArea.value = data.ids.join("\n");
+        document.getElementById("resultCount").innerText = data.ids.length;
       } else {
-        resultArea.value = "❌ حدث خطأ أثناء فحص الإدخال";
-        invalidArea.value = "❌ حدث خطأ أثناء التحقق من المقفول";
+        resultArea.value = "❌ حدث خطأ أثناء استخراج الإيديهات";
       }
     }
 
@@ -285,29 +266,7 @@
       const blob = new Blob([resultArea.value], { type: "text/plain;charset=utf-8" });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = "valid_results.txt";
-      link.click();
-    }
-
-    function copyInvalid() {
-      const invalidArea = document.getElementById("invalidUrls");
-      invalidArea.select();
-      document.execCommand("copy");
-      const btn = document.getElementById("copyInvalidBtn");
-      btn.innerText = "✔ تم النسخ!";
-      btn.style.backgroundColor = "#4caf50";
-      setTimeout(() => {
-        btn.innerText = "📋 نسخ المقفول";
-        btn.style.backgroundColor = "#007bff";
-      }, 2000);
-    }
-
-    function downloadInvalid() {
-      const invalidArea = document.getElementById("invalidUrls");
-      const blob = new Blob([invalidArea.value], { type: "text/plain;charset=utf-8" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = "invalid_results.txt";
+      link.download = "facebook_ids.txt";
       link.click();
     }
 
