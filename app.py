@@ -31,16 +31,28 @@ async def fetch(session, url):
 
 async def extract_ids_async(urls):
     ids = []
-    connector = aiohttp.TCPConnector(limit=100)  # تحكم في العدد لو عايز
+    failed_urls = []
+    connector = aiohttp.TCPConnector(limit=100)  # تحكم في العدد徐
     async with aiohttp.ClientSession(connector=connector) as session:
-        tasks = [fetch(session, url.strip()) for url in urls if url.strip()]
+        tasks = []
+        url_map = {}  # لربط الروابط بنتائجها
+        for url in urls:
+            url = url.strip()
+            if url:
+                tasks.append(fetch(session, url))
+                url_map[url] = None  # تهيئة الرابط بدون إيدي
+
         results = await asyncio.gather(*tasks)
 
-        for fb_id in results:
+        # ربط النتائج بالروابط
+        for url, fb_id in zip([url.strip() for url in urls if url.strip()], results):
             if fb_id:
                 ids.append(fb_id)
+                url_map[url] = fb_id
+            else:
+                failed_urls.append(url)
 
-    return ids
+    return ids, failed_urls
 
 @app.route('/')
 def home():
@@ -51,9 +63,9 @@ def extract_ids():
     data = request.get_json()
     urls = data.get("urls", [])
 
-    ids = asyncio.run(extract_ids_async(urls))
+    ids, failed_urls = asyncio.run(extract_ids_async(urls))
 
-    return jsonify(success=True, ids=ids)
+    return jsonify(success=True, ids=ids, failed_urls=failed_urls)
 
 if __name__ == '__main__':
     app.run()
