@@ -14,12 +14,6 @@ async def fetch(session, url):
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
     try:
-        # محاولة استخراج الإيدي من عنوان URL أولاً
-        match = re.search(r'(?:id=|fbid=)(\d+)', url)
-        if match:
-            logging.debug(f"ID extracted from URL for {url}: {match.group(1)}")
-            return match.group(1)
-
         # إجراء طلب HTTP
         async with session.get(url, headers=headers, timeout=10, allow_redirects=True) as response:
             # تسجيل رمز الاستجابة
@@ -36,13 +30,25 @@ async def fetch(session, url):
             blocked_indicators = [
                 "account has been disabled",
                 "this account is not available",
+                "sorry, this content isn't available right now",
+                "the link you followed may be broken",
+                "this page isn't available",
                 "الحساب تم تعطيله",
-                "هذا الحساب غير متاح"
+                "هذا الحساب غير متاح",
+                "عذرًا، هذا المحتوى غير متاح حاليًا",
+                "الرابط الذي تتبعه قد يكون معطوبًا",
+                "هذه الصفحة غير متاحة"
             ]
             for phrase in blocked_indicators:
                 if phrase in html.lower():
                     logging.debug(f"Blocked indicator found in {url}: {phrase}")
                     return None
+
+            # محاولة استخراج الإيدي من عنوان URL
+            match = re.search(r'(?:id=|fbid=)(\d+)', url)
+            if match:
+                logging.debug(f"ID extracted from URL for {url}: {match.group(1)}")
+                return match.group(1)
 
             # محاولة استخراج الإيدي من الـ HTML
             match = re.search(r'fb://profile/(\d+)', html)
