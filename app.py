@@ -14,6 +14,12 @@ async def fetch(session, url):
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
     try:
+        # محاولة استخراج الإيدي من عنوان URL
+        url_id_match = re.search(r'(?:id=|fbid=)(\d+)', url)
+        potential_id = url_id_match.group(1) if url_id_match else None
+        if potential_id:
+            logging.debug(f"Potential ID extracted from URL for {url}: {potential_id}")
+
         # إجراء طلب HTTP
         async with session.get(url, headers=headers, timeout=10, allow_redirects=True) as response:
             # تسجيل رمز الاستجابة
@@ -30,25 +36,18 @@ async def fetch(session, url):
             blocked_indicators = [
                 "account has been disabled",
                 "this account is not available",
-                "sorry, this content isn't available right now",
-                "the link you followed may be broken",
-                "this page isn't available",
                 "الحساب تم تعطيله",
-                "هذا الحساب غير متاح",
-                "عذرًا، هذا المحتوى غير متاح حاليًا",
-                "الرابط الذي تتبعه قد يكون معطوبًا",
-                "هذه الصفحة غير متاحة"
+                "هذا الحساب غير متاح"
             ]
             for phrase in blocked_indicators:
                 if phrase in html.lower():
                     logging.debug(f"Blocked indicator found in {url}: {phrase}")
                     return None
 
-            # محاولة استخراج الإيدي من عنوان URL
-            match = re.search(r'(?:id=|fbid=)(\d+)', url)
-            if match:
-                logging.debug(f"ID extracted from URL for {url}: {match.group(1)}")
-                return match.group(1)
+            # إذا تم استخراج إيدي من URL وما فيش عبارات حظر، نرجّع الإيدي
+            if potential_id:
+                logging.debug(f"Confirmed ID from URL for {url}: {potential_id}")
+                return potential_id
 
             # محاولة استخراج الإيدي من الـ HTML
             match = re.search(r'fb://profile/(\d+)', html)
@@ -64,16 +63,6 @@ async def fetch(session, url):
             match = re.search(r'profile_id=(\d+)', html)
             if match:
                 logging.debug(f"ID extracted from profile_id for {url}: {match.group(1)}")
-                return match.group(1)
-
-            match = re.search(r'"userID":"(\d+)"', html)
-            if match:
-                logging.debug(f"ID extracted from userID for {url}: {match.group(1)}")
-                return match.group(1)
-
-            match = re.search(r'data-profileid="(\d+)"', html)
-            if match:
-                logging.debug(f"ID extracted from data-profileid for {url}: {match.group(1)}")
                 return match.group(1)
 
             logging.debug(f"No ID found for {url}")
