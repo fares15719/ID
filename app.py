@@ -32,7 +32,7 @@ async def fetch(session, url):
 
             html = await response.text()
 
-            # التحقق من عبارات تشير إلى حساب مقفول فقط
+            # التحقق من عبارات تشير إلى حساب مقفول
             blocked_indicators = [
                 "account has been disabled",
                 "this account is not available",
@@ -42,24 +42,6 @@ async def fetch(session, url):
             for phrase in blocked_indicators:
                 if phrase in html.lower():
                     logging.debug(f"Blocked indicator found in {url}: {phrase}")
-                    return None
-
-            # التحقق من عبارات أقل تأكيدًا بشروط إضافية
-            soft_block_indicators = [
-                "this content isn't available",
-                "this page isn't available",
-                "sorry, this content isn't available right now",
-                "the link you followed may be broken",
-                "محتوى غير متاح",
-                "هذه الصفحة غير متاحة",
-                "عذرًا، هذا المحتوى غير متاح حاليًا",
-                "الرابط الذي تتبعه قد يكون معطوبًا"
-            ]
-            if any(phrase in html.lower() for phrase in soft_block_indicators):
-                # التحقق من وجود إيدي قبل اعتبار الرابط مقفول
-                match = re.search(r'(?:fb://profile/|entity_id":"|profile_id=|userID":"|data-profileid=")(\d+)"?', html)
-                if not match:
-                    logging.debug(f"Soft block indicator found in {url} with no ID: {soft_block_indicators}")
                     return None
 
             # محاولة استخراج الإيدي من الـ HTML
