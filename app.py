@@ -1,80 +1,38 @@
 import asyncio
 import aiohttp
 import re
-import logging
 from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__, template_folder='templates')
 
-# إعداد التسجيل لتصحيح الأخطاء
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-
 async def fetch(session, url):
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0'
     }
     try:
-        # محاولة استخراج الإيدي من عنوان URL
-        url_id_match = re.search(r'(?:id=|fbid=)(\d+)', url)
-        potential_id = url_id_match.group(1) if url_id_match else None
-        if potential_id:
-            logging.debug(f"Potential ID extracted from URL for {url}: {potential_id}")
-
-        # إجراء طلب HTTP
-        async with session.get(url, headers=headers, timeout=10, allow_redirects=True) as response:
-            # تسجيل رمز الاستجابة
-            logging.debug(f"HTTP status for {url}: {response.status}")
-
-            # التحقق من رمز الاستجابة
-            if response.status not in [200, 302]:
-                logging.debug(f"Non-200/302 status for {url}: {response.status}")
-                return None
-
+        async with session.get(url, headers=headers, timeout=10) as response:
             html = await response.text()
 
-            # التحقق من عبارات تشير إلى حساب مقفول
-            blocked_indicators = [
-                "account has been disabled",
-                "this account is not available",
-                "الحساب تم تعطيله",
-                "هذا الحساب غير متاح"
-            ]
-            for phrase in blocked_indicators:
-                if phrase in html.lower():
-                    logging.debug(f"Blocked indicator found in {url}: {phrase}")
-                    return None
-
-            # إذا تم استخراج إيدي من URL وما فيش عبارات حظر، نرجّع الإيدي
-            if potential_id:
-                logging.debug(f"Confirmed ID from URL for {url}: {potential_id}")
-                return potential_id
-
-            # محاولة استخراج الإيدي من الـ HTML
             match = re.search(r'fb://profile/(\d+)', html)
             if match:
-                logging.debug(f"ID extracted from fb://profile for {url}: {match.group(1)}")
                 return match.group(1)
 
             match = re.search(r'"entity_id":"(\d+)"', html)
             if match:
-                logging.debug(f"ID extracted from entity_id for {url}: {match.group(1)}")
                 return match.group(1)
 
             match = re.search(r'profile_id=(\d+)', html)
             if match:
-                logging.debug(f"ID extracted from profile_id for {url}: {match.group(1)}")
                 return match.group(1)
 
-            logging.debug(f"No ID found for {url}")
             return None
-    except Exception as e:
-        logging.error(f"Exception for {url}: {str(e)}")
+    except Exception:
         return None
 
 async def extract_ids_async(urls):
     ids = []
     failed_urls = []
-    connector = aiohttp.TCPConnector(limit=100)  # تحكم في العدد
+    connector = aiohttp.TCPConnector(limit=100)  # تحكم في العدد徐
     async with aiohttp.ClientSession(connector=connector) as session:
         tasks = []
         url_map = {}  # لربط الروابط بنتائجها
