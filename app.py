@@ -1,4 +1,3 @@
---- app.py ---
 import asyncio
 import aiohttp
 import re
@@ -7,38 +6,81 @@ from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__, template_folder='templates')
 
-# ✅ وضع الصيانة - غيرها لـ False لفتح الموقع
+# ✅ متغير وضع الصيانة - غيره لـ False لما تحب تشغل الموقع
 MAINTENANCE_MODE = True
 
-# Logging
+# Set up logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 async def fetch(session, url, retry=False):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
         'Accept-Language': 'en-US,en;q=0.9',
         'Accept-Encoding': 'gzip, deflate, br',
         'Connection': 'keep-alive',
-        'Referer': 'https://www.facebook.com/'
+        'Referer': 'https://www.facebook.com/',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'same-origin',
+        'Sec-Fetch-User': '?1',
+        'Upgrade-Insecure-Requests': '1',
     }
+
+    retry_headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+        'Referer': 'https://www.facebook.com/',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'same-origin',
+        'Sec-Fetch-User': '?1',
+        'Upgrade-Insecure-Requests': '1',
+    }
+
     try:
         logging.debug(f"Fetching URL: {url}")
         await asyncio.sleep(3)
-        async with session.get(url, headers=headers, timeout=15) as response:
-            html = await response.text()
+        async with session.get(url, headers=headers if not retry else retry_headers, timeout=15, allow_redirects=True) as response:
+            try:
+                html = await response.text()
+            except Exception as e:
+                logging.error(f"Error decoding response for {url}: {str(e)}")
+                html = ""
+
+            logging.debug(f"Response status: {response.status}, Final URL: {response.url}")
+
+            if response.status != 200:
+                logging.debug(f"Non-200 status code: {response.status}")
+                if response.status == 400 and not retry:
+                    logging.debug("Retrying with alternate headers...")
+                    return await fetch(session, url, retry=True)
+
+                if response.status == 400 and ('profile' in html.lower() or re.search(r'\b(\d{10,})\b', html)):
+                    logging.debug("Page seems to be a valid profile despite 400 status")
+                    return "valid_profile"
+
+                return None
+
             for pattern in [
                 r'fb://profile/(\d+)',
-                r'"entity_id":"(\d+)",',
+                r'"entity_id":"(\d+)"',
                 r'profile_id=(\d+)',
-                r'"userID":"(\d+)",',
+                r'"userID":"(\d+)"',
                 r'\b(\d{10,})\b'
             ]:
                 match = re.search(pattern, html)
                 if match:
                     return match.group(1)
-            if 'profile' in html.lower():
+
+            if 'profile' in html.lower() or 'user' in html.lower():
+                logging.debug("Page seems to be a valid profile, but no ID found")
                 return "valid_profile"
+
+            logging.debug("No ID or profile indicators found in HTML")
             return None
     except Exception as e:
         logging.error(f"Error fetching {url}: {str(e)}")
@@ -50,25 +92,37 @@ async def extract_ids_async(inputs):
     connector = aiohttp.TCPConnector(limit=20)
     async with aiohttp.ClientSession(connector=connector) as session:
         tasks = []
-        for line in inputs:
-            line = line.strip()
-            if not line:
+        for input_line in inputs:
+            input_line = input_line.strip()
+            if not input_line:
                 continue
-            if line.startswith(('http://', 'https://')):
-                tasks.append((line, fetch(session, line)))
+            if input_line.startswith(('http://', 'https://')):
+                logging.debug(f"Processing URL: {input_line}")
+                tasks.append((input_line, fetch(session, input_line)))
             else:
-                match = re.search(r'(\d{10,})', line)
+                match = re.search(r'(\d{10,})', input_line)
                 if match:
-                    url = f"https://www.facebook.com/profile.php?id={match.group(1)}"
-                    tasks.append((line, fetch(session, url)))
+                    fb_id = match.group(1)
+                    url = f"https://www.facebook.com/profile.php?id={fb_id}"
+                    logging.debug(f"Extracted ID {fb_id} from line: {input_line}, checking URL: {url}")
+                    tasks.append((input_line, fetch(session, url)))
                 else:
-                    invalid_results.append(line)
+                    logging.debug(f"No valid ID found in line: {input_line}")
+                    invalid_results.append(input_line)
+
         results = await asyncio.gather(*[task[1] for task in tasks], return_exceptions=True)
-        for (line, _), result in zip(tasks, results):
+
+        for (input_line, _), result in zip(tasks, results):
             if isinstance(result, Exception) or result is None:
-                invalid_results.append(line)
+                logging.debug(f"Invalid result for line: {input_line}, result: {result}")
+                invalid_results.append(input_line)
             else:
-                valid_results.append(result)
+                logging.debug(f"Valid result for line: {input_line}, ID: {result}")
+                if input_line.startswith(('http://', 'https://')):
+                    valid_results.append(result)
+                else:
+                    valid_results.append(input_line)
+
     return valid_results, invalid_results
 
 @app.route('/')
@@ -82,59 +136,9 @@ def extract_ids():
     if MAINTENANCE_MODE:
         return jsonify(success=False, message="🚧 الموقع تحت الصيانة حالياً.")
     data = request.get_json()
-    urls = data.get("urls", [])
-    valid, invalid = asyncio.run(extract_ids_async(urls))
-    return jsonify(success=True, valid_results=valid, invalid_results=invalid)
+    inputs = data.get("urls", [])
+    valid_results, invalid_results = asyncio.run(extract_ids_async(inputs))
+    return jsonify(success=True, valid_results=valid_results, invalid_results=invalid_results)
 
 if __name__ == '__main__':
     app.run(debug=True)
-
---- templates/maintenance.html ---
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <title>🚧 الموقع تحت الصيانة</title>
-  <style>
-    body {
-      background-color: #121212;
-      color: #fff;
-      font-family: 'Tajawal', sans-serif;
-      text-align: center;
-      padding: 50px;
-    }
-    .box {
-      max-width: 600px;
-      margin: auto;
-      background: #1e1e1e;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px #000;
-    }
-    h1 {
-      color: #ffcc00;
-    }
-  </style>
-</head>
-<body>
-  <div class="box">
-    <h1>🚧 الموقع تحت الصيانة</h1>
-    <p>نقوم ببعض التحديثات حالياً لتحسين تجربتك، نقدر صبرك ❤️</p>
-  </div>
-</body>
-</html>
-
---- requirements.txt ---
-flask
-aiohttp
-
---- vercel.json ---
-{
-  "version": 2,
-  "builds": [
-    { "src": "app.py", "use": "@vercel/python" }
-  ],
-  "routes": [
-    { "src": "/(.*)", "dest": "app.py" }
-  ]
-}
