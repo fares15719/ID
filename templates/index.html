@@ -40,6 +40,13 @@
     .whatsapp {
       color: #25d366;
     }
+    .whatsapp a {
+      color: #25d366;
+      text-decoration: none; /* إزالة التسطير */
+    }
+    .whatsapp a:hover {
+      text-decoration: underline; /* إضافة تسطير عند التمرير لتحسين التجربة */
+    }
     .tool-toggle {
       display: flex;
       gap: 10px;
@@ -163,7 +170,7 @@
           📖 إِنَّ اللَّهَ وَمَلَائِكَتَهُ يُصَلُّونَ عَلَى النَّبِيِّ ۚ يَا أَيُّهَا الَّذِينَ آمَنُوا صَلُّوا عَلَيْهِ وَسَلِّمُوا تَسْلِيمًا
         </div>
         <div class="welcome-message">🤝 مرحبا بك يا صديقي العزيز أنا هنا لمساعدتك 🌟</div>
-        <div class="whatsapp">📱 رقم الواتساب: 01211584356</div>
+        <div class="whatsapp">📱 رقم الواتساب: <a href="https://wa.me/+201211584356" target="_blank">01211584356</a></div>
       </div>
     </div>
 
@@ -203,6 +210,12 @@
         <div class="textarea-wrapper">
           <div class="counter-label">📤 عدد الروابط المقفولة: (<span id="closedLinksCount">0</span>)</div>
           <textarea id="closedLinks" placeholder="الروابط المقفولة ستظهر هنا" readonly></textarea>
+        </div>
+        
+        <!-- أزرار النسخ والتحميل للروابط المقفولة -->
+        <div class="button-group">
+          <button id="copyClosedBtn" onclick="copyClosedLinks()">📋 نسخ الكل</button>
+          <button id="downloadClosedBtn" onclick="downloadClosedLinks()">💾 تحميل كملف .txt</button>
         </div>
       </div>
     </div>
@@ -251,6 +264,7 @@
       if (data.success) {
         resultArea.value = data.ids.join("\n");
         document.getElementById("resultCount").innerText = data.ids.length;
+
         // عرض الروابط المقفولة إذا كانت موجودة في الاستجابة
         if (data.failed_urls && data.failed_urls.length > 0) {
           closedLinksArea.value = data.failed_urls.join("\n");
@@ -260,7 +274,7 @@
           document.getElementById("closedLinksCount").innerText = 0;
         }
       } else {
-        resultArea.value = "❌ حدث خطأ أثناء استخراج الإيديهات";
+        resultArea.value = "❌ حدث خطأ أثناء استخراج الإيدالهات";
         closedLinksArea.value = "غير معروف";
         document.getElementById("closedLinksCount").innerText = 0;
       }
@@ -285,6 +299,28 @@
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
       link.download = "facebook_ids.txt";
+      link.click();
+    }
+
+    function copyClosedLinks() {
+      const closedLinksArea = document.getElementById("closedLinks");
+      closedLinksArea.select();
+      document.execCommand("copy");
+      const btn = document.getElementById("copyClosedBtn");
+      btn.innerText = "✔ تم النسخ!";
+      btn.style.backgroundColor = "#4caf50";
+      setTimeout(() => {
+        btn.innerText = "📋 نسخ الكل";
+        btn.style.backgroundColor = "#007bff";
+      }, 2000);
+    }
+
+    function downloadClosedLinks() {
+      const closedLinksArea = document.getElementById("closedLinks");
+      const blob = new Blob([closedLinksArea.value], { type: "text/plain;charset=utf-8" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "closed_links.txt";
       link.click();
     }
 
