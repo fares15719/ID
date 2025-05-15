@@ -198,6 +198,12 @@
           <button id="copyBtn" onclick="copyAll()">📋 نسخ الكل</button>
           <button id="downloadBtn" onclick="downloadResults()">💾 تحميل كملف .txt</button>
         </div>
+
+        <!-- مربع النص بتاع الروابط المقفولة -->
+        <div class="textarea-wrapper">
+          <div class="counter-label">📤 عدد الروابط المقفولة: (<span id="closedLinksCount">0</span>)</div>
+          <textarea id="closedLinks" placeholder="الروابط المقفولة ستظهر هنا" readonly></textarea>
+        </div>
       </div>
     </div>
 
@@ -218,6 +224,7 @@
       const textarea = document.getElementById("fbLinks");
       const resultBox = document.getElementById("resultBox");
       const resultArea = document.getElementById("result");
+      const closedLinksArea = document.getElementById("closedLinks");
       const copyBtn = document.getElementById("copyBtn");
       const downloadBtn = document.getElementById("downloadBtn");
       const extractBtn = document.getElementById("extractBtn");
@@ -227,6 +234,7 @@
 
       resultBox.style.display = 'block';
       resultArea.value = "⏳ جاري استخراج الإيديهات...";
+      closedLinksArea.value = "";
       extractBtn.innerText = "🔄 جاري المعالجة...";
       extractBtn.disabled = true;
 
@@ -243,8 +251,18 @@
       if (data.success) {
         resultArea.value = data.ids.join("\n");
         document.getElementById("resultCount").innerText = data.ids.length;
+        // عرض الروابط المقفولة إذا كانت موجودة في الاستجابة
+        if (data.failed_urls && data.failed_urls.length > 0) {
+          closedLinksArea.value = data.failed_urls.join("\n");
+          document.getElementById("closedLinksCount").innerText = data.failed_urls.length;
+        } else {
+          closedLinksArea.value = "لا توجد روابط مقفولة";
+          document.getElementById("closedLinksCount").innerText = 0;
+        }
       } else {
         resultArea.value = "❌ حدث خطأ أثناء استخراج الإيديهات";
+        closedLinksArea.value = "غير معروف";
+        document.getElementById("closedLinksCount").innerText = 0;
       }
     }
 
