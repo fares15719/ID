@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Facebook ID Extractor ✸ Fares Ayoub ✸</title>
+  <title>Facebook ID Extractor ✸</title>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     body {
@@ -22,40 +22,11 @@
       margin: 0 auto;
       flex-grow: 1;
     }
-    .header-box {
-      background: #1e1e1e;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    }
-    .welcome-box {
-      margin-top: 10px;
-      font-size: 0.95rem;
-    }
-    .verse {
-      color: #00ff90;
-      margin-bottom: 10px;
-    }
-    .whatsapp {
-      color: #25d366;
-    }
-    .whatsapp a {
-      color: #25d366;
-      text-decoration: none; /* إزالة التسطير */
-    }
-    .whatsapp a:hover {
-      text-decoration: underline; /* إضافة تسطير عند التمرير لتحسين التجربة */
-    }
     .tool-toggle {
       display: flex;
       gap: 10px;
       justify-content: center;
       margin-bottom: 20px;
-    }
-    .tool-toggle button {
-      flex: 1;
-      max-width: 200px;
     }
     .textarea-wrapper {
       background-color: #2a2a2a;
@@ -115,21 +86,6 @@
       box-sizing: border-box;
       margin: 10px 0;
     }
-    .iframe-wrapper {
-      background-color: #2a2a2a;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-      position: relative;
-      padding-top: 60px;
-    }
-    iframe {
-      width: 100%;
-      height: 500px;
-      border: none;
-      transform: translateY(-60px);
-      filter: invert(90%) hue-rotate(180deg);
-    }
     @media (max-width: 600px) {
       body {
         padding: 10px;
@@ -151,131 +107,78 @@
         font-size: 0.9rem;
         padding: 10px;
       }
-      .iframe-wrapper {
-        padding-top: 40px;
-      }
-      iframe {
-        height: 400px;
-        transform: translateY(-40px);
-      }
     }
   </style>
-
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-V5RPM5QYPC"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-V5RPM5QYPC');
-</script>
-
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-V5RPM5QYPC"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-V5RPM5QYPC');
+  </script>
 </head>
 <body>
   <div class="container">
-    <div class="header-box">
-      <h2>✸ Fares Ayoub ✸</h2>
-      <div class="welcome-box">
-        <div class="verse">
-          📖 إِنَّ اللَّهَ وَمَلَائِكَتَهُ يُصَلُّونَ عَلَى النَّبِيِّ ۚ يَا أَيُّهَا الَّذِينَ آمَنُوا صَلُّوا عَلَيْهِ وَسَلِّمُوا تَسْلِيمًا
-        </div>
-        <div class="welcome-message">🤝 مرحبا بك يا صديقي العزيز أنا هنا لمساعدتك 🌟</div>
-        <div class="whatsapp">📱 رقم الواتساب: <a href="https://wa.me/+201211584356" target="_blank">01211584356</a></div>
-      </div>
-    </div>
-
     <div class="tool-toggle">
       <button onclick="showTool('extractor')">🆔 ID Extractor</button>
-      <button onclick="showTool('checker')" style="background-color: #ff9800;">🧪 UID Checker</button>
     </div>
-
     <div id="extractorTool">
-      <!-- جزء رفع الملفات فوق الـ textarea -->
       <input type="file" id="fileInput" accept=".txt,.csv,.json" />
-      
-      <!-- مربع النص بتاع الروابط -->
       <div class="textarea-wrapper">
         <div class="counter-label">📥 عدد الروابط: (<span id="inputCount">0</span>)</div>
         <textarea id="fbLinks" placeholder="ألصق روابط فيسبوك هنا كل رابط في سطر..." oninput="updateCounters()"></textarea>
       </div>
-      
       <div class="button-group">
         <button onclick="extractIDs()" id="extractBtn">🚀 استخراج الإيديهات</button>
       </div>
-
       <div id="resultBox" style="display:none;">
-        <!-- مربع النص بتاع النتيجة -->
         <div class="textarea-wrapper">
           <div class="counter-label">📤 عدد الإيديهات: (<span id="resultCount">0</span>)</div>
           <textarea id="result" readonly></textarea>
         </div>
-        
-        <!-- أزرار النسخ والتحميل تحت الـ textarea -->
         <div class="button-group">
           <button id="copyBtn" onclick="copyAll()">📋 نسخ الكل</button>
           <button id="downloadBtn" onclick="downloadResults()">💾 تحميل كملف .txt</button>
         </div>
-
-        <!-- مربع النص بتاع الروابط المقفولة -->
         <div class="textarea-wrapper">
           <div class="counter-label">📤 عدد الروابط المقفولة: (<span id="closedLinksCount">0</span>)</div>
           <textarea id="closedLinks" placeholder="الروابط المقفولة ستظهر هنا" readonly></textarea>
         </div>
-        
-        <!-- أزرار النسخ والتحميل للروابط المقفولة -->
         <div class="button-group">
           <button id="copyClosedBtn" onclick="copyClosedLinks()">📋 نسخ الكل</button>
           <button id="downloadClosedBtn" onclick="downloadClosedLinks()">💾 تحميل كملف .txt</button>
         </div>
       </div>
     </div>
-
-    <div id="checkerTool" style="display:none;">
-      <div class="iframe-wrapper">
-        <iframe src="https://2fa.page/check_live_uid.php/"></iframe>
-      </div>
-    </div>
   </div>
-
   <script>
     function showTool(tool) {
-      document.getElementById("extractorTool").style.display = tool === 'extractor' ? 'block' : 'none';
-      document.getElementById("checkerTool").style.display = tool === 'checker' ? 'block' : 'none';
+      document.getElementById("extractorTool").style.display = 'block';
     }
-
     async function extractIDs() {
       const textarea = document.getElementById("fbLinks");
       const resultBox = document.getElementById("resultBox");
       const resultArea = document.getElementById("result");
       const closedLinksArea = document.getElementById("closedLinks");
-      const copyBtn = document.getElementById("copyBtn");
-      const downloadBtn = document.getElementById("downloadBtn");
       const extractBtn = document.getElementById("extractBtn");
       const links = textarea.value.split('\n').map(link => link.trim()).filter(Boolean);
-
       if (links.length === 0) return alert("يرجى إدخال روابط أولاً");
-
       resultBox.style.display = 'block';
       resultArea.value = "⏳ جاري استخراج الإيديهات...";
       closedLinksArea.value = "";
       extractBtn.innerText = "🔄 جاري المعالجة...";
       extractBtn.disabled = true;
-
       const res = await fetch("/get_ids", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ urls: links })
       });
-
       const data = await res.json();
       extractBtn.innerText = "🚀 استخراج الإيديهات";
       extractBtn.disabled = false;
-
       if (data.success) {
         resultArea.value = data.ids.join("\n");
         document.getElementById("resultCount").innerText = data.ids.length;
-
-        // عرض الروابط المقفولة إذا كانت موجودة في الاستجابة
         if (data.failed_urls && data.failed_urls.length > 0) {
           closedLinksArea.value = data.failed_urls.join("\n");
           document.getElementById("closedLinksCount").innerText = data.failed_urls.length;
@@ -289,7 +192,6 @@
         document.getElementById("closedLinksCount").innerText = 0;
       }
     }
-
     function copyAll() {
       const resultArea = document.getElementById("result");
       resultArea.select();
@@ -302,7 +204,6 @@
         btn.style.backgroundColor = "#007bff";
       }, 2000);
     }
-
     function downloadResults() {
       const resultArea = document.getElementById("result");
       const blob = new Blob([resultArea.value], { type: "text/plain;charset=utf-8" });
@@ -311,7 +212,6 @@
       link.download = "facebook_ids.txt";
       link.click();
     }
-
     function copyClosedLinks() {
       const closedLinksArea = document.getElementById("closedLinks");
       closedLinksArea.select();
@@ -324,7 +224,6 @@
         btn.style.backgroundColor = "#007bff";
       }, 2000);
     }
-
     function downloadClosedLinks() {
       const closedLinksArea = document.getElementById("closedLinks");
       const blob = new Blob([closedLinksArea.value], { type: "text/plain;charset=utf-8" });
@@ -333,12 +232,10 @@
       link.download = "closed_links.txt";
       link.click();
     }
-
     function updateCounters() {
       const count = document.getElementById("fbLinks").value.split('\n').filter(Boolean).length;
       document.getElementById("inputCount").innerText = count;
     }
-
     document.getElementById("fileInput").addEventListener("change", function(e) {
       const reader = new FileReader();
       reader.onload = function(event) {
